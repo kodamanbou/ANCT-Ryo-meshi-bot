@@ -79,9 +79,9 @@ if __name__ == '__main__':
             day = today + datetime.timedelta(days=delta)
             daystr = day.strftime('%Y/%m/%d')
             obj.setdefault(daystr, {})
-            obj[daystr].setdefault('breakfast', '')
-            obj[daystr].setdefault('lunch', '')
-            obj[daystr].setdefault('dinner', '')
+            obj[daystr].setdefault('breakfast', [])
+            obj[daystr].setdefault('lunch', [])
+            obj[daystr].setdefault('dinner', [])
 
             if meal_type == 0:
                 obj[daystr]['breakfast'] = menu_items
@@ -94,7 +94,7 @@ if __name__ == '__main__':
             delta += 1
 
     with open('outputs/menu.yml', 'w') as file:
-        yaml.dump(obj, file)
+        yaml.dump(obj, file, encoding='utf-8')
 
     shutil.rmtree('images')
     os.mkdir('images')

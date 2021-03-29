@@ -70,8 +70,9 @@ def get_menu_items(fid):
     s = s.replace('」', '')
     s = s.replace('|', '')
     s = s.replace('.', '')
+    menus = s.split(' ')
 
-    return s
+    return menus
 
 
 def delete_docs(fid):
