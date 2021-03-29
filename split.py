@@ -5,6 +5,7 @@ import numpy as np
 import shutil
 import datetime
 import matplotlib.pyplot as plt
+import yaml
 from drive_api import upload_with_ocr, get_menu_items, delete_docs
 
 if __name__ == '__main__':
@@ -60,24 +61,40 @@ if __name__ == '__main__':
         plt.imshow(dst, cmap='gray')
         plt.show()
 
-    output = open('outputs/menu.txt', 'w')
     today = datetime.datetime.now()
+    obj = dict()
 
     for week, menus in enumerate(out_files):
+        # meal_type: 0 -> breakfast, 1 -> lunch, 2 -> dinner
         delta = 0
+        meal_type = 0
         if week > 0:
             today = today + datetime.timedelta(days=7)
         for f in menus:
             if delta > 6:
                 delta = 0
+                meal_type = 0 if meal_type == 2 else meal_type % 2 + 1
             fid = upload_with_ocr(f)
             menu_items = get_menu_items(fid)
             day = today + datetime.timedelta(days=delta)
-            output.write(day.strftime('%Y/%m/%d '))
-            output.write(menu_items)
+            daystr = day.strftime('%Y/%m/%d')
+            obj.setdefault(daystr, {})
+            obj[daystr].setdefault('breakfast', '')
+            obj[daystr].setdefault('lunch', '')
+            obj[daystr].setdefault('dinner', '')
+
+            if meal_type == 0:
+                obj[daystr]['breakfast'] = menu_items
+            elif meal_type == 1:
+                obj[daystr]['lunch'] = menu_items
+            else:
+                obj[daystr]['dinner'] = menu_items
+
             delete_docs(fid)
             delta += 1
 
-    output.close()
+    with open('outputs/menu.yml', 'w') as file:
+        yaml.dump(obj, file)
+
     shutil.rmtree('images')
     os.mkdir('images')
