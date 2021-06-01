@@ -15,7 +15,7 @@ if __name__ == '__main__':
     for i, img in enumerate(images):
         img = np.array(img, dtype=np.uint8)
         if img.shape[0] > img.shape[1]:
-            img = np.rot90(img)
+            img = np.rot90(img, 3)
         gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
         gray = cv2.bitwise_not(gray)
 
@@ -62,7 +62,6 @@ if __name__ == '__main__':
             for label in labels[3:]:
                 if abs(label.x - menu.x) < 4:
                     menu.date = label.value
-                    print(menu.date)
                     break
 
             if abs(labels[2].y - menu.y) < 10:
