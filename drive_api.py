@@ -1,6 +1,7 @@
 import os
 import argparse
 import pathlib
+import datetime
 import httplib2
 from apiclient import discovery
 from googleapiclient.http import MediaFileUpload
@@ -73,6 +74,19 @@ def get_menu_items(fid):
     menus = s.split(' ')
 
     return menus
+
+
+def get_date(fid):
+    credential = get_credential()
+    service = discovery.build('docs', 'v1', http=credential.authorize(httplib2.Http()),
+                              discoveryServiceUrl=DISCOVERY_DOC)
+    result = service.documents().get(documentId=fid).execute()
+    s = result['body']['content'][2]['paragraph']['elements'][0]['textRun']['content']
+    s = s.split('(')[0]
+    s = s.replace('・', '')
+    s = datetime.datetime.strptime(s, '%m月%d日').strftime('%m/%d')
+
+    return s
 
 
 def delete_docs(fid):
