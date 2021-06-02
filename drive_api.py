@@ -6,7 +6,8 @@ from googleapiclient.http import MediaFileUpload
 from credential import get_credential
 
 MIME_TYPE = 'application/vnd.google-apps.document'
-SCOPES = 'https://www.googleapis.com/auth/drive.file'
+SCOPES = ['https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/gmail.readonly']
 DOC_SCOPES = 'https://www.googleapis.com/auth/documents.readonly'
 DISCOVERY_DOC = ('https://docs.googleapis.com/$discovery/rest?'
                  'version=v1')

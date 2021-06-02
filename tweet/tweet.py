@@ -1,8 +1,8 @@
 import tweepy
-import datetime, sys, time, yaml, codecs
+import datetime, yaml
 from time import sleep
 from datetime import timedelta
-from key import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET
+from tweet.key import CONSUMER_KEY, CONSUMER_SECRET, ACCESS_TOKEN_KEY, ACCESS_TOKEN_SECRET
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY,CONSUMER_SECRET)
 auth.set_access_token(ACCESS_TOKEN_KEY,ACCESS_TOKEN_SECRET)
