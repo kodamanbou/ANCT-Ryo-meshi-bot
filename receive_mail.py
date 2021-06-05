@@ -1,20 +1,16 @@
-import os
+import base64
 import httplib2
 from apiclient import discovery
 from credential import get_credential
-
-SCOPES = ['https://www.googleapis.com/auth/drive.file',
-          'https://www.googleapis.com/auth/gmail.readonly']
-client_secret = 'client_id.json'
-application_name = 'Ryo-meshi'
+from tweet.key import TARGET_ADDRESS
 
 if __name__ == '__main__':
-    creds = get_credential(application_name, client_secret, SCOPES)
+    creds = get_credential()
     http = creds.authorize(httplib2.Http())
     service = discovery.build('gmail', 'v1', http=http)
 
-    responce = service.users().labels().list(userId='me').execute()
-    labels = responce['labels']
+    response = service.users().labels().list(userId='me').execute()
+    labels = response['labels']
     target_label_ids = [label['id'] for label in labels if label['id'] == 'UNREAD']
 
     message_ids = (
@@ -22,12 +18,40 @@ if __name__ == '__main__':
                                         labelIds=target_label_ids).execute())
 
     if message_ids["resultSizeEstimate"] > 0:
+        remove_ids = []
         for message_id in message_ids['messages']:
-            detail = (service.users().messages().get(userId='me', id=message_id['id']).execute())
+            message_detail = (service.users().messages().get(userId='me', id=message_id['id']).execute())
             message = dict()
+            message['id'] = message_id['id']
             message['from'] = [header['value']
-                               for header in detail['payload']['headers']
+                               for header in message_detail['payload']['headers']
                                if header['name'] == 'From'][0]
-            print(message['from'])
+            if message['from'].split('<')[1].strip('>') == TARGET_ADDRESS:
+                attach_id = message_detail['payload']['parts'][1]['body']['attachmentId']
+                response = service.users().messages().attachments().get(
+                    userId='me',
+                    messageId=message['id'],
+                    id=attach_id
+                ).execute()
+
+                file_data = base64.urlsafe_b64decode(response.get('data').encode('UTF-8'))
+                with open('data/data.pdf', 'wb') as f:
+                    f.write(file_data)
+
+                remove_ids.append(message['id'])
+
+        if len(remove_ids) > 0:
+            labels_mod = {
+                'ids': remove_ids,
+                'removeLabelIds': target_label_ids,
+                'addLabelIds': []
+            }
+
+            message_ids = (
+                service.users().messages().batchModify(
+                    userId='me',
+                    body=labels_mod
+                ).execute()
+            )
     else:
         print('There are no messages.')

@@ -89,26 +89,26 @@ if __name__ == '__main__':
         plt.imshow(dst, cmap='gray')
         plt.show()
 
-    obj = dict()
+    with open('outputs/menu.yml') as file:
+        obj = yaml.safe_load(file)
+        for week, menus in enumerate(monthly_menus):
+            # meal_type: 0 -> breakfast, 1 -> lunch, 2 -> dinner
+            for f in menus:
+                fid = upload_with_ocr(f.fname)
+                menu_items = get_menu_items(fid)
+                obj.setdefault(f.date, {})
+                obj[f.date].setdefault('breakfast', [])
+                obj[f.date].setdefault('lunch', [])
+                obj[f.date].setdefault('dinner', [])
 
-    for week, menus in enumerate(monthly_menus):
-        # meal_type: 0 -> breakfast, 1 -> lunch, 2 -> dinner
-        for f in menus:
-            fid = upload_with_ocr(f.fname)
-            menu_items = get_menu_items(fid)
-            obj.setdefault(f.date, {})
-            obj[f.date].setdefault('breakfast', [])
-            obj[f.date].setdefault('lunch', [])
-            obj[f.date].setdefault('dinner', [])
+                if f.meal_type == 0:
+                    obj[f.date]['breakfast'] = menu_items
+                elif f.meal_type == 1:
+                    obj[f.date]['lunch'] = menu_items
+                else:
+                    obj[f.date]['dinner'] = menu_items
 
-            if f.meal_type == 0:
-                obj[f.date]['breakfast'] = menu_items
-            elif f.meal_type == 1:
-                obj[f.date]['lunch'] = menu_items
-            else:
-                obj[f.date]['dinner'] = menu_items
-
-            delete_docs(fid)
+                delete_docs(fid)
 
     with open('outputs/menu.yml', 'w') as file:
         yaml.dump(obj, file, encoding='utf-8')
