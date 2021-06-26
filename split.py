@@ -9,7 +9,7 @@ from chart import Menu, Label
 from drive_api import upload_with_ocr, get_menu_items, get_date, delete_docs
 
 if __name__ == '__main__':
-    images = convert_from_path('data/data.pdf')
+    images = convert_from_path('data/data2.pdf')
     monthly_menus = []
 
     for i, img in enumerate(images):
@@ -42,9 +42,10 @@ if __name__ == '__main__':
         for j, cnt in enumerate(contours):
             if cv2.contourArea(cnt) > 12600:
                 x, y, w, h = cv2.boundingRect(cnt)
-                plt.imsave(f'images/{i}_{j}.png', img[y:y + h - 35, x:x + w])
+                plt.imsave(f'images/{i}_{j}.png', img[y:y + h - 40, x:x + w])
                 menus.append(Menu(f'{i}_{j}.png', x=x, y=y))
-            elif cv2.contourArea(cnt) > 9000:
+                img = cv2.rectangle(img, (x, y), (x + w, y + h - 40), (0, 255, 0), thickness=3)
+            elif cv2.contourArea(cnt) > 8000:
                 x, y, w, h = cv2.boundingRect(cnt)
                 plt.imsave(f'images/{i}_{j}.png', img[y:y + h, x:x + w])
                 label = Label(f'{i}_{j}.png', x=x, y=y)
@@ -64,12 +65,8 @@ if __name__ == '__main__':
                     menu.date = label.value
                     break
 
-            if abs(labels[2].y - menu.y) < 10:
-                menu.meal_type = 0
-            elif abs(labels[1].y - menu.y) < 10:
-                menu.meal_type = 1
-            else:
-                menu.meal_type = 2
+            dists = [abs(label.y - menu.y) for label in reversed(labels[:3])]
+            menu.meal_type = dists.index(min(dists))
 
         monthly_menus.append(menus)
 

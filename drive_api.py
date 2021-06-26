@@ -43,6 +43,7 @@ def get_menu_items(fid):
     s = s.replace('」', '')
     s = s.replace('|', '')
     s = s.replace('.', '')
+    s = s.replace('、', '')
     menus = s.split(' ')
 
     return menus
